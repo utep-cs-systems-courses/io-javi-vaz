@@ -8,12 +8,12 @@ LDFLAGS		= -L/opt/ti/msp430_gcc/include
 CC              = msp430-elf-gcc
 AS              = msp430-elf-as
 
-all: led-c.elf led-s.elf 
+all: led-s.elf 
 
 #additional rules for files
-led-c.elf: ${COMMON_OBJECTS} greenControl-c.o
+led-c.elf: ${COMMON_OBJECTS} greenControl-c.o oncePerSecond-c.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
-led-s.elf: ${COMMON_OBJECTS} greenControl-s.o
+led-s.elf: ${COMMON_OBJECTS} greenControl-s.o Once-per-second-s.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^ ../lib/libTimer.a
 
 load-c: led-c.elf

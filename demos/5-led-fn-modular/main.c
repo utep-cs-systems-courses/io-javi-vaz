@@ -14,15 +14,6 @@ int main(void) {
   or_sr(0x18);		/* CPU off, GIE on */
 }
 
-void greenControl(int on)
-{
-  if (on) {
-    P1OUT |= LED_GREEN;
-  } else {
-    P1OUT &= ~LED_GREEN;
-  }
-}
-
 // blink state machine
 static int blinkLimit = 5;   //  state var representing reciprocal of duty cycle 
 void blinkUpdate() // called every 1/250s to blink with duty cycle 1/blinkLimit
@@ -31,16 +22,9 @@ void blinkUpdate() // called every 1/250s to blink with duty cycle 1/blinkLimit
   blinkCount ++;
   if (blinkCount >= blinkLimit) {
     blinkCount = 0;
-    greenControl(1);
+    P1OUT |= LED_GREEN;
   } else
-    greenControl(0);
-}
-
-void oncePerSecond() // repeatedly start bright and gradually lower duty cycle, one step/sec
-{
-  blinkLimit ++;  // reduce duty cycle
-  if (blinkLimit >= 8)  // but don't let duty cycle go below 1/7.
-    blinkLimit = 0;
+    P1OUT &= ~LED_GREEN;
 }
 
 void secondUpdate()  // called every 1/250 sec to call oncePerSecond once per second
@@ -49,19 +33,16 @@ void secondUpdate()  // called every 1/250 sec to call oncePerSecond once per se
   secondCount ++;
   if (secondCount >= 250) { // once each second
     secondCount = 0;
-    oncePerSecond();
+    //repeatedly start bright and gradually lower duty cycle, one step/sec
+    blinkLimit ++; //reduce duty cycle
+    if(blinkLimit >= 8) //but don't let duty cycle go below 1/7
+      blinkLimit = 0;
   } }
-
-void timeAdvStateMachines() // called every 1/250 sec
-{
-  blinkUpdate();
-  secondUpdate();
-}
-
 
 void __interrupt_vec(WDT_VECTOR) WDT()	/* 250 interrupts/sec */
 {
-  // handle blinking   
-  timeAdvStateMachines();
+  //Called every 1/250 sec
+  blinkUpdate();   
+  secondUpdate();
 } 
 
