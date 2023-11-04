@@ -11,6 +11,7 @@
 void main(void) 
 {  
   configureClocks();
+  enableWDTInterrupts();
 
   P1DIR |= LEDS;
   P1OUT &= ~LEDS;		/* leds initially off */
@@ -23,6 +24,7 @@ void main(void)
   or_sr(0x18);  // CPU off, GIE on
 } 
 
+char toggle = 0;
 void
 switch_interrupt_handler()
 {
@@ -34,12 +36,32 @@ switch_interrupt_handler()
 
 /* up=red, down=green */
   if (p1val & SW1) {
+    toggle++;
+    // P1OUT |= LED_RED;
+    //P1OUT &= ~LED_GREEN;
+  } else {
+    toggle++;
+    //P1OUT |= LED_GREEN;
+    //P1OUT &= ~LED_RED;
+  }
+  switch(toggle){
+  case 1:
     P1OUT |= LED_RED;
     P1OUT &= ~LED_GREEN;
-  } else {
-    P1OUT |= LED_GREEN;
+    break;
+  case 2:
+    break;
+  case 3:
     P1OUT &= ~LED_RED;
+    P1OUT |= LED_GREEN;
+    break;
+  case 4:
+    toggle = 0;
+    break;
+    
   }
+  
+    
 }
 
 
@@ -51,3 +73,26 @@ __interrupt_vec(PORT1_VECTOR) Port_1(){
     switch_interrupt_handler();	/* single handler for all switches */
   }
 }
+
+// global state var to count time
+
+int secondCount = 0;
+
+void
+__interrupt_vec(WDT_VECTOR) WDT()/* 250 interrupts/sec */
+{
+  secondCount ++;
+  if (secondCount >= 125) { /* once each sec... */
+    secondCount = 0;/* reset count */
+    //P1OUT ^= LED_GREEN;/* toggle green LED */
+    //P1OUT ^= LED_RED;           /* toggle red LED */
+    switch(toggle){
+    case 0:
+      P1OUT |= LEDS;
+      break;
+    default:
+      P1OUT ^= LEDS;
+      break;
+    }
+  }
+} 
