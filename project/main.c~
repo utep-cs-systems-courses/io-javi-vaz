@@ -1,0 +1,11 @@
+#include <msp430.h>
+#include "libTimer.h"
+#include "switches.h"
+#include "led.h"
+
+int main{
+  configureClocks();
+  enabledWDTInterrupts();
+
+  
+}
