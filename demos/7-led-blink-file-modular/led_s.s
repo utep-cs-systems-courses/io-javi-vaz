@@ -7,7 +7,7 @@ red_on:		.word 0
 green_on:	.word 0
 led_changed:	.word 0
 
-LEDS:		.word 1
+LEDS:		.word 65
 	
 redVal:		.word 0,1
 greenVal:	.word 0,64
@@ -19,12 +19,12 @@ greenVal:	.word 0,64
 	.global red_on
 	.global green_on
 	.global led_changed
+	.global LEDS
 	.extern P1OUT
 	.extern P1DIR
-	bis.b #64, &LEDS
 
 led_init:
-	bis.b &P1DIR,&LEDS
+	bis &P1DIR,&LEDS
 	mov #1, &led_changed
 	call #led_update
 	pop r0
@@ -34,18 +34,19 @@ led_update:
 	jnz changed
 	pop r0
 changed:
-	sub #1,r1
+	sub #4,r1
 	
 	mov &red_on, r12
 	mov &green_on, r13
-	bis.b greenVal(r13),redVal(r12)
 	mov redVal(r12), 0(r1)
+	bis greenVal(r13),0(r1)
 
-	xor.b #255,&LEDS
-	bis.b &LEDS, 0(r1)
-	and.b 0(r1), &P1OUT
-	bis.b 0(r1), &P1OUT
+	mov &LEDS, 2(r1)
+	xor #255, 2(r1)
+	bis 0(r1), 2(r1)
+	and 2(r1), &P1OUT
+	bis 0(r1), &P1OUT
 	mov #0,&led_changed
 
-	add #1, r1
+	add #4, r1
 	pop r0
