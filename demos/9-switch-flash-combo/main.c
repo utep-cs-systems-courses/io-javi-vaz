@@ -35,6 +35,8 @@ void main(void)
 } 
 
 static int buttonDown;
+static int blink_count = 1;
+static int toggle = 0;
 
 void
 switch_interrupt_handler()
@@ -48,12 +50,24 @@ switch_interrupt_handler()
   if (p1val & SW1) {		/* button up */
     P1OUT &= ~LED_GREEN;
     buttonDown = 0;
+    toggle++;
   } else {			/* button down */
     P1OUT |= LED_GREEN;
     buttonDown = 1;
+    toggle++;
+  }
+  switch(toggle){
+  case 1:
+    blink_count += 2;
+    if(blink_count>9){
+      blink_count = 1;
+    }
+    break;
+  case 2:
+    toggle = 0;
+    break;
   }
 }
-
 
 /* Switch on P1 (S2) */
 void
@@ -67,14 +81,13 @@ __interrupt_vec(PORT1_VECTOR) Port_1(){
 void
 __interrupt_vec(WDT_VECTOR) WDT()	/* 250 interrupts/sec */
 {
-  static int blink_count = 0;
-  switch (blink_count) { 
-  case 6: 
-    blink_count = 0;
+  static int blinks = 0;
+  if(blinks >=blink_count){
+    blinks = 0;
     P1OUT |= LED_RED;
-    break;
-  default:
-    blink_count ++;
-    if (!buttonDown) P1OUT &= ~LED_RED; /* don't blink off if button is down */
+  }else{
+    P1OUT &= ~LED_RED;
   }
+  blinks++;
+  //if (!buttonDown) P1OUT &= ~LED_RED; /* don't blink off if button is down */
 } 
